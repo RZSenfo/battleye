@@ -4,7 +4,7 @@
   <a href="https://www.npmjs.com/package/battleye-redux"><img src="https://img.shields.io/npm/l/battleye-redux.svg" alt="License"></a>
 </p>
 
-# battleye-redux
+# @senfo/redux
 > Forked from [nurdism/battleye](https://github.com/nurdism/battleye)  
 > Battleye rcon client built in nodejs.
 

@@ -1,5 +1,5 @@
 {
-  "name": "battleye-redux",
+  "name": "@senfo/battleye",
   "version": "2.0.1",
   "description": "Battleye rcon client built in typescript for node.",
   "keywords": [
@@ -21,7 +21,7 @@
     "clean": "rimraf coverage build tmp",
     "build": "tsc",
     "lint": "eslint --ext ts src",
-    "release": "npm run clean && npm run lint && npm run build && git push --follow-tags && npm publish",
+    "release": "npm run clean && npm run lint && npm run build && git push --follow-tags && npm publish --access public",
     "precommit": "npm run lint"
   },
   "author": {
