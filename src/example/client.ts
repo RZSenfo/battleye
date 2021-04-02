@@ -1,5 +1,3 @@
-/* tslint:disable:all */
-
 /*
 Command	Description
   loadScripts	  loads the "scripts.txt" file without the need to restart the server.
@@ -32,7 +30,7 @@ readCfg(process.cwd())
 
     const socket = new Socket({
       port: 2310,     // listen port
-      ip: '0.0.0.0',  // listen ip
+      ip: '0.0.0.0'  // listen ip
     })
 
     const connection = socket.connection({
@@ -49,7 +47,7 @@ readCfg(process.cwd())
       timeoutInterval: 1000,        // interval to check packets (in ms)
       serverTimeout: 30000,         // timeout server connection (in ms)
       packetTimeout: 1000,          // timeout packet check interval (in ms)
-      packetTimeoutThresholded: 5,  // packets to resend
+      packetTimeoutThresholded: 5  // packets to resend
     })
 
     const rl = readline.createInterface({
@@ -57,7 +55,7 @@ readCfg(process.cwd())
       output: process.stdout
     })
 
-    socket.on('listening', (socket) => {
+    socket.on('listening', socket => {
       const addr = socket.address()
       console.log(`Socket listening on ${typeof addr === 'string' ? addr : `${addr.address}:${addr.port}`}`)
     })
@@ -70,7 +68,9 @@ readCfg(process.cwd())
       console.log(`sent: ${connection.ip}:${connection.port} => packet:`, packet)
     })
 
-    socket.on('error', (err) => { console.error(`SOCKET ERROR:`, err) })
+    socket.on('error', err => {
+      console.error('SOCKET ERROR:', err)
+    })
 
     connection.on('message', (message, packet) => {
       console.log(`message: ${connection.ip}:${connection.port} => message: ${message}`)
@@ -80,7 +80,7 @@ readCfg(process.cwd())
       console.log(`command: ${connection.ip}:${connection.port} => packet:`, packet)
     })
 
-    connection.on('disconnected', (reason) => {
+    connection.on('disconnected', reason => {
       console.warn(`disconnected from ${connection.ip}:${connection.port},`, reason)
     })
 
@@ -88,10 +88,12 @@ readCfg(process.cwd())
       console.error(`connected to ${connection.ip}:${connection.port}`)
     })
 
-    connection.on('debug', console.log)
+    connection.on('debug', m => {
+      console.log(m)
+    })
 
-    connection.on('error', (err) => {
-      console.error(`CONNECTION ERROR:`, err)
+    connection.on('error', err => {
+      console.error('CONNECTION ERROR:', err)
     })
 
     rl.on('line', input => {
@@ -100,11 +102,15 @@ readCfg(process.cwd())
         .then(response => {
           console.log(`response: ${connection.ip}:${connection.port} => ${response.command}\n${response.data}`)
         })
-        .catch(console.error)
+        .catch(e => {
+          console.error(e)
+        })
 
       console.log(`send: ${connection.ip}:${connection.port} => ${input}`)
     })
   })
-  .catch(err => { console.error(`Error reading config:`, err) })
+  .catch(err => {
+    console.error('Error reading config:', err)
+  })
 
 

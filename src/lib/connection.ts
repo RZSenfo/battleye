@@ -88,7 +88,7 @@ export class Connection extends EventEmitter {
     received: number,
     sequence: number,
     connected: boolean,
-    lastPacket?: Packet,
+    lastPacket?: number,
   }
 
   /**
@@ -155,6 +155,7 @@ export class Connection extends EventEmitter {
 
     this.setup()
 
+    this.info.lastPacket = new Date().getTime()
     return this.send(new Packet(PacketType.Login, PacketDirection.Request, { password: this.info.password }))
   }
 
@@ -212,7 +213,9 @@ export class Connection extends EventEmitter {
   }
 
   public async recieve(packet: Packet) {
-    this.info.lastPacket = packet
+    if (packet?.timestamp) {
+      this.info.lastPacket = packet.timestamp
+    }
 
     if (packet.direction === PacketDirection.Split) { // handle multipart packets
       if (this.multipart[packet.sequence].length === 0) {
@@ -441,11 +444,9 @@ export class Connection extends EventEmitter {
           const time = new Date().getTime()
           const { lastPacket } = this.info
 
-          if (lastPacket && lastPacket.timestamp) {
-            if (time - lastPacket.timestamp >= serverTimeout) {
-              this.disconnect(new ServerTimeout())
-              return
-            }
+          if (lastPacket && time - lastPacket >= serverTimeout) {
+            this.disconnect(new ServerTimeout())
+            return
           }
 
           for (const p of this.packets) {
@@ -530,6 +531,7 @@ export class Connection extends EventEmitter {
     this.info.received = 0
     this.info.sequence = -1
     this.info.connected = false
+    this.info.lastPacket = undefined
     this.packets = new Array(255)
     this.multipart = new Array(255)
 
