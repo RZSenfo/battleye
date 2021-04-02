@@ -1,6 +1,6 @@
 {
   "name": "@senfo/battleye",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Battleye rcon client built in typescript for node.",
   "keywords": [
     "battleye",
@@ -11,7 +11,8 @@
   ],
   "files": [
     "dist",
-    "readme.md"
+    "readme.md",
+    "!**/*.tsbuildinfo"
   ],
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",
