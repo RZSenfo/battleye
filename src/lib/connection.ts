@@ -213,9 +213,7 @@ export class Connection extends EventEmitter {
   }
 
   public async recieve(packet: Packet) {
-    if (packet?.timestamp) {
-      this.info.lastPacket = packet.timestamp
-    }
+    this.info.lastPacket = new Date().getTime()
 
     if (packet.direction === PacketDirection.Split) { // handle multipart packets
       if (this.multipart[packet.sequence].length === 0) {
