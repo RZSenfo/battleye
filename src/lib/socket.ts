@@ -18,11 +18,6 @@ export declare interface Socket { // eslint-disable-line @typescript-eslint/inte
   on(event: 'error', listener: (error: Error) => void): this,
 }
 
-interface IOptions {
-  port: number,
-  ip: string,
-}
-
 /**
  * UDP Socket for battleye rcon server to communicate with
  *
@@ -32,7 +27,6 @@ interface IOptions {
  * @implements {ISocket}
  */
 export class Socket extends EventEmitter {
-  private readonly options: IOptions
   private readonly socket: dgram.Socket
   private readonly connections: { [id: string]: Connection }
 
@@ -45,16 +39,8 @@ export class Socket extends EventEmitter {
    * @param {ISocketOptions} [options={}]
    * @memberof Socket
    */
-  constructor(options: ISocketOptions = {}) {
+  constructor() {
     super()
-
-    this.options = {
-      port: 2310,
-      ip: '0.0.0.0',
-      ...options
-    }
-
-    const { port, ip } = this.options
 
     this.connections = {}
     this.info = {
@@ -66,15 +52,9 @@ export class Socket extends EventEmitter {
     }, this.receive.bind(this)) // tslint:disable-line:no-unsafe-any
 
     this.socket.on('error', (err: Error) => {
+      this.info.listening = false
       this.emit('error', err)
-      this.socket.close(() => {
-        for (const id of Object.keys(this.connections)) {
-          const connection = this.connections[id]
-          if (connection instanceof Connection) {
-            connection.kill(err)
-          }
-        }
-      })
+      this.close(err)
     })
 
     this.socket.on('listening', () => {
@@ -82,11 +62,11 @@ export class Socket extends EventEmitter {
       this.emit('listening', this.socket)
     })
 
-    this.socket.bind({
-      address: ip,
-      port,
-      exclusive: true
+    this.socket.on('close', () => {
+      this.info.listening = false
     })
+
+    this.socket.bind()
   }
 
   /**
@@ -171,17 +151,20 @@ export class Socket extends EventEmitter {
    * @memberof Socket
    */
   public send(connection: Connection, packet: Packet, resolve: boolean = true): Promise<IPacketResponse> {
-    return new Promise((res: (value?: IPacketResponse | PromiseLike<IPacketResponse>) => void, rej: (reason?: Error) => void) => {
+    return new Promise<IPacketResponse>((res: (value: IPacketResponse | PromiseLike<IPacketResponse>) => void, rej: (reason?: Error) => void) => {
       if (!(packet instanceof Packet)) {
-        return rej(new TypeError('packet must be an instance of BEPacket'))
+        rej(new TypeError('packet must be an instance of BEPacket'))
+        return
       }
 
       if (!packet.valid) {
-        return rej(new InvalidPacket())
+        rej(new InvalidPacket())
+        return
       }
 
       if (!(connection instanceof Connection)) {
-        return rej(new TypeError('connection must be an instance of Connection'))
+        rej(new TypeError('connection must be an instance of Connection'))
+        return
       }
 
       if (packet.type === PacketType.Command && packet.sequence < 0) {
@@ -192,12 +175,15 @@ export class Socket extends EventEmitter {
       try {
         buffer = packet.serialize()
       } catch (e) {
-        return rej(e) // tslint:disable-line:no-unsafe-any
+        // eslint-disable-next-line prefer-promise-reject-errors
+        rej(e as any)
+        return
       }
 
       this.socket.send(buffer, 0, buffer.length, connection.port, connection.ip, (err: Error | null, bytes: number) => {
         if (err !== null) {
-          return rej(err)
+          rej(err)
+          return
         }
 
         this.emit('sent', packet, buffer, bytes, connection)
@@ -211,15 +197,16 @@ export class Socket extends EventEmitter {
               reject: rej
             })
           } catch (e) {
-            return rej(e) // tslint:disable-line:no-unsafe-any
+            // eslint-disable-next-line prefer-promise-reject-errors
+            rej(e as any)
           }
         } else {
-          return res({
+          res({
             bytes,
             sent: packet,
             received: undefined,
             connection
-          })
+          } as IPacketResponse)
         }
       })
     })
@@ -234,5 +221,20 @@ export class Socket extends EventEmitter {
    */
   get listening(): boolean {
     return this.info.listening
+  }
+
+  public close(err: Error): void {
+    this.removeAllListeners()
+    try {
+      this.socket.disconnect()
+    } catch {}
+    this.socket.close(() => {
+      for (const id of Object.keys(this.connections)) {
+        const connection = this.connections[id]
+        if (connection instanceof Connection) {
+          connection.kill(err)
+        }
+      }
+    })
   }
 }

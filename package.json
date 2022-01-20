@@ -1,6 +1,6 @@
 {
   "name": "@senfo/battleye",
-  "version": "2.0.4",
+  "version": "2.1.0",
   "description": "Battleye rcon client built in typescript for node.",
   "keywords": [
     "battleye",
@@ -16,8 +16,8 @@
   ],
   "main": "dist/lib/index.js",
   "types": "dist/lib/index.d.ts",
-  "repository": "https://github.com/RZSenfo/battleye",
-  "homepage": "https://github.com/RZSenfo/battleye",
+  "repository": "https://github.com/mr-guard/battleye",
+  "homepage": "https://github.com/mr-guard/battleye",
   "scripts": {
     "clean": "rimraf coverage build tmp",
     "build": "tsc",
@@ -26,9 +26,9 @@
     "precommit": "npm run lint"
   },
   "author": {
-    "name": "Senfo",
+    "name": "mr-guard",
     "email": "lpsenfo@gmail.com",
-    "url": "https://github.com/RZSenfo"
+    "url": "https://github.com/mr-guard"
   },
   "engines": {
     "node": ">=12"

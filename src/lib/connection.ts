@@ -216,7 +216,7 @@ export class Connection extends EventEmitter {
     this.info.lastPacket = new Date().getTime()
 
     if (packet.direction === PacketDirection.Split) { // handle multipart packets
-      if (this.multipart[packet.sequence].length === 0) {
+      if (!this.multipart[packet.sequence]?.length) {
         this.multipart[packet.sequence] = new Array(packet.get('total'))
       }
 
@@ -249,7 +249,7 @@ export class Connection extends EventEmitter {
             }
           }
         } catch (err) {
-          return this.resolve(new Packet(PacketType.Command, PacketDirection.Reply, { error: err, sequence: packet.sequence }))
+          return this.resolve(new Packet(PacketType.Command, PacketDirection.Reply, { error: err as any, sequence: packet.sequence }))
         }
       }
 

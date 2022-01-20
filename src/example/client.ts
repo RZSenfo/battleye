@@ -28,10 +28,7 @@ readCfg(process.cwd())
       throw new Error('Invalid BEServer.cfg')
     }
 
-    const socket = new Socket({
-      port: 2310,     // listen port
-      ip: '0.0.0.0'  // listen ip
-    })
+    const socket = new Socket()
 
     const connection = socket.connection({
       name: 'my-server',                // server name
