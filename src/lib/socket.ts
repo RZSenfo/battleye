@@ -223,11 +223,8 @@ export class Socket extends EventEmitter {
     return this.info.listening
   }
 
-  public close(err: Error): void {
+  public close(err?: Error): void {
     this.removeAllListeners()
-    try {
-      this.socket.disconnect()
-    } catch {}
     this.socket.close(() => {
       for (const id of Object.keys(this.connections)) {
         const connection = this.connections[id]
@@ -236,5 +233,8 @@ export class Socket extends EventEmitter {
         }
       }
     })
+    try {
+      this.socket.disconnect()
+    } catch {}
   }
 }

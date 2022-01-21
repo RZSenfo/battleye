@@ -1,6 +1,6 @@
 {
   "name": "@senfo/battleye",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Battleye rcon client built in typescript for node.",
   "keywords": [
     "battleye",

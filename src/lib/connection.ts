@@ -399,8 +399,10 @@ export class Connection extends EventEmitter {
    * @param {Error} reason
    * @memberof Connection
    */
-  public kill(reason: Error): void {
-    this.emit('error', reason)
+  public kill(reason?: Error): void {
+    if (reason) {
+      this.emit('error', reason)
+    }
     this.disconnect(reason)
   }
 
