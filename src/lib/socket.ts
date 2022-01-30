@@ -151,6 +151,7 @@ export class Socket extends EventEmitter {
    * @memberof Socket
    */
   public send(connection: Connection, packet: Packet, resolve: boolean = true): Promise<IPacketResponse> {
+    const cause = new Error()
     return new Promise<IPacketResponse>((res: (value: IPacketResponse | PromiseLike<IPacketResponse>) => void, rej: (reason?: Error) => void) => {
       if (!(packet instanceof Packet)) {
         rej(new TypeError('packet must be an instance of BEPacket'))
@@ -194,7 +195,8 @@ export class Socket extends EventEmitter {
               packet,
               bytes,
               resolve: res,
-              reject: rej
+              reject: rej,
+              cause
             })
           } catch (e) {
             // eslint-disable-next-line prefer-promise-reject-errors
@@ -231,12 +233,5 @@ export class Socket extends EventEmitter {
       }
     }
     this.socket.close()
-    this.removeAllListeners()
-    for (const id of Object.keys(this.connections)) {
-      const connection = this.connections[id]
-      if (connection instanceof Connection) {
-        connection.removeAllListeners()
-      }
-    }
   }
 }

@@ -2,7 +2,7 @@ import * as utils from './utils'
 
 import { EventEmitter } from 'events'
 import { clearTimeout } from 'timers'
-import { InvalidPassword, NoConnection, PacketOverflow, ServerDisconnect, ServerTimeout, UnknownCommand, UnknownPacketType, MaxRetries } from './errors'
+import { InvalidPassword, NoConnection, PacketOverflow, ServerDisconnect, ServerTimeout, UnknownCommand, UnknownPacketType, MaxRetries, PacketCleanupError } from './errors'
 import { Packet, PacketDirection, PacketType } from './packet'
 import { Socket } from './socket'
 
@@ -30,6 +30,7 @@ export interface IPacketPromise {
   packet: Packet,
   resolve (value?: IPacketResponse | PromiseLike<IPacketResponse>): void,
   reject (reason?: Error): void,
+  cause: Error,
 }
 
 export interface IPacketResponse {
@@ -150,7 +151,7 @@ export class Connection extends EventEmitter {
     }
 
     if (this.connected) {
-      this.disconnect()
+      this.disconnect(new ServerDisconnect())
     }
 
     this.setup()
@@ -486,8 +487,8 @@ export class Connection extends EventEmitter {
    * @param {Error} [reason=new ServerDisconnect()]
    * @memberof Connection
    */
-  private disconnect(reason: Error = new ServerDisconnect()): void {
-    this.cleanup(reason)
+  private disconnect(reason?: Error): void {
+    this.cleanup()
     this.emit('disconnected', reason)
     const { reconnect, reconnectTimeout } = this.options
     if (reconnect && (reason instanceof ServerTimeout)) {
@@ -506,24 +507,27 @@ export class Connection extends EventEmitter {
    * cleans up unresolved promises and resets connection
    *
    * @private
-   * @param {Error} error
    * @memberof Connection
    */
-  private cleanup(error: Error): void {
+  private cleanup(): void {
     if (this.timeout) {
-      clearTimeout(this.timeout)
+      clearInterval(this.timeout)
       this.timeout = undefined
     }
 
     if (this.keepAlive) {
-      clearTimeout(this.keepAlive)
+      clearInterval(this.keepAlive)
       this.keepAlive = undefined
     }
 
 
     for (const packet of this.packets) {
       if (packet !== undefined) {
-        packet.reject(error)
+        const err = new PacketCleanupError('Cleanup', packet.cause)
+        err.stack = (err.stack || '')
+        err.stack += '\nCause:\n'
+        err.stack += packet?.cause?.stack
+        packet.reject(err)
       }
     }
 

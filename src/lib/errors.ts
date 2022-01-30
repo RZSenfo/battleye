@@ -166,6 +166,20 @@ export class PacketError extends Error {
 }
 
 /**
+ * PacketCleanupError
+ *
+ * @export
+ * @class PacketCleanupError
+ * @extends {Error}
+ */
+export class PacketCleanupError extends Error {
+  constructor(
+    message: string,
+    public cause?: Error
+  ) { super(`Packet Error: ${message}`) }
+}
+
+/**
  * PacketOverflow
  *
  * @export
