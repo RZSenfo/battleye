@@ -477,7 +477,7 @@ export class Connection extends EventEmitter {
     if (this.info.sequence >= 255) {
       this.info.sequence = -1
     }
-    return this.info.sequence = this.info.sequence + 1
+    return this.info.sequence += 1
   }
 
   /**

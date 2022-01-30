@@ -224,17 +224,19 @@ export class Socket extends EventEmitter {
   }
 
   public close(err?: Error): void {
-    this.removeAllListeners()
-    this.socket.close(() => {
-      for (const id of Object.keys(this.connections)) {
-        const connection = this.connections[id]
-        if (connection instanceof Connection) {
-          connection.kill(err)
-        }
+    for (const id of Object.keys(this.connections)) {
+      const connection = this.connections[id]
+      if (connection instanceof Connection) {
+        connection.kill(err)
       }
-    })
-    try {
-      this.socket.disconnect()
-    } catch {}
+    }
+    this.socket.close()
+    this.removeAllListeners()
+    for (const id of Object.keys(this.connections)) {
+      const connection = this.connections[id]
+      if (connection instanceof Connection) {
+        connection.removeAllListeners()
+      }
+    }
   }
 }
